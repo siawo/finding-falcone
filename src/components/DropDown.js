@@ -7,10 +7,10 @@ export default (props) => {
         selectedPlanetList = new Set()
     } = props,
         nonSelectedPlanets = planets.filter(
-            planet => !selectedPlanetList.has(planet.name) || resource.planet === planet.name
+            planet => !selectedPlanetList.has(planet.name) || resource.planetName === planet.name
         );
     return (
-        <select defaultValue={resource.planet} onChange={e => { planetSelected(e.target.value, index) }}>
+        <select defaultValue={resource.planetName} onChange={e => { planetSelected(e.target.value, index) }}>
             <option key='select'>Select</option>
             {
                 nonSelectedPlanets.map(
