@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 import DropDwon from './components/DropDown.js';
+import Radio from './components/Radio.js';
 import axios from 'axios';
 
 class App extends Component {
@@ -15,20 +16,24 @@ class App extends Component {
       resourceRestriction: 4,
       totalTime: 0
     }
-    this.planetSelected = (planet, selectIndex) => {
+    this.planetSelected = (planetName, selectIndex) => {
       this.setState(state => {
         let { resourceAllocation,
-          selectedPlanetList } = state;
-        selectedPlanetList.delete(resourceAllocation[selectIndex].planet);
-        if (planet === 'Select') {
+          selectedPlanetList,
+          planets
+        } = state;
+        selectedPlanetList.delete(resourceAllocation[selectIndex].planetName);
+        if (planetName === 'Select') {
           Object.assign(resourceAllocation[selectIndex], {
-            planet: undefined
+            planetName: undefined,
+            distance: undefined
           });
         } else {
           Object.assign(resourceAllocation[selectIndex], {
-            planet
+            planetName: planetName,
+            distance: planets[planets.findIndex(eachPlanet => eachPlanet.name === planetName)].distance
           });
-          selectedPlanetList.add(planet);
+          selectedPlanetList.add(planetName);
         }
         return {
           resourceAllocation,
@@ -42,10 +47,10 @@ class App extends Component {
       axios.get('https://findfalcone.herokuapp.com/planets'),
       axios.get('https://findfalcone.herokuapp.com/vehicles')
     ])
-      .then(([planetsRes, vehiclesRes]) => {
+      .then(([{ data: planets }, { data: vehicles }]) => {
         this.setState({
-          vehicles: vehiclesRes.data,
-          planets: planetsRes.data
+          planets,
+          vehicles
         })
       })
       .catch(() => {
@@ -58,22 +63,35 @@ class App extends Component {
     let { error,
       resourceAllocation,
       planets,
+      vehicles,
       selectedPlanetList } = this.state;
     return error ? (<h1> connect to Internet</h1>) : (
       <div className="App">
         <h1>Finding Falcon</h1>
         <p>Select planets you want to search in:</p>
-        {
-          resourceAllocation.map((res, i) =>
-            (<DropDwon
-              resource={res}
-              planetSelected={this.planetSelected}
-              key={i}
-              index={i}
-              planets={planets}
-              selectedPlanetList={selectedPlanetList}
-            />))
-        }
+        <div>
+          {
+            resourceAllocation.map((res, i) =>
+              (<DropDwon
+                resource={res}
+                planetSelected={this.planetSelected}
+                key={i}
+                index={i}
+                planets={planets}
+                selectedPlanetList={selectedPlanetList}
+              />))
+          }
+        </div>
+        <div>
+          {
+            resourceAllocation.map((res, i) =>
+              (<Radio
+                resource={res}
+                key={i}
+                vehicles={vehicles}
+              />))
+          }
+        </div>
       </div>
     );
   }
