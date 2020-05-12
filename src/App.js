@@ -12,6 +12,7 @@ class App extends Component {
       vehicles: [],
       planets: [],
       selectedPlanetList: new Set(),
+      selectedVehicles: new Map(),
       resourceAllocation: new Array(4).fill().map(() => ({})),
       resourceRestriction: 4,
       totalTime: 0
@@ -20,7 +21,8 @@ class App extends Component {
       this.setState(state => {
         let { resourceAllocation,
           selectedPlanetList,
-          planets
+          planets,
+          selectedVehicles
         } = state;
         selectedPlanetList.delete(resourceAllocation[selectIndex].planetName);
         if (planetName === 'Select') {
@@ -35,9 +37,36 @@ class App extends Component {
           });
           selectedPlanetList.add(planetName);
         }
+        // reset the radio selection
+        if (resourceAllocation[selectIndex].vehicleName) {
+          let lastSelectedVehicle = resourceAllocation[selectIndex].vehicleName,
+            value = selectedVehicles.get(lastSelectedVehicle);
+            delete resourceAllocation[selectIndex].vehicleName
+          selectedVehicles.set(lastSelectedVehicle, --value)
+         }
         return {
           resourceAllocation,
           selectedPlanetList
+        }
+      });
+    }
+    this.radioClicked = (vehicleName, selectIndex) => {
+      this.setState(state => {
+        let { 
+          resourceAllocation,
+          selectedVehicles
+         } = state;
+         if (resourceAllocation[selectIndex].vehicleName) {
+          let lastSelectedVehicle = resourceAllocation[selectIndex].vehicleName,
+            value = selectedVehicles.get(lastSelectedVehicle);
+          selectedVehicles.set(lastSelectedVehicle, --value)
+         }
+        resourceAllocation[selectIndex].vehicleName = vehicleName;
+          let value = selectedVehicles.get(vehicleName) || 0;
+          selectedVehicles.set(vehicleName, ++value)
+        return {
+          resourceAllocation,
+          selectedVehicles
         }
       })
     }
@@ -64,7 +93,9 @@ class App extends Component {
       resourceAllocation,
       planets,
       vehicles,
-      selectedPlanetList } = this.state;
+      selectedPlanetList,
+      selectedVehicles
+    } = this.state;
     return error ? (<h1> connect to Internet</h1>) : (
       <div className="App">
         <h1>Finding Falcon</h1>
@@ -88,7 +119,10 @@ class App extends Component {
               (<Radio
                 resource={res}
                 key={i}
+                index={i}
                 vehicles={vehicles}
+                selectedVehicles={selectedVehicles}
+                radioClicked={this.radioClicked}
               />))
           }
         </div>
