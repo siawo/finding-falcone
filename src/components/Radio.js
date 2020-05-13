@@ -19,7 +19,7 @@ export default (props) => {
 				value={vehicle.name}
 				checked={isSameVehicleSelected}
 				disabled={!(vehiclesLeft || isSameVehicleSelected) || (vehicle.max_distance - resource.distance < 0)}
-				onChange={(e) => radioClicked(e.target.value, index)}
+				onChange={(e) => radioClicked(e.target.value, index, vehicle.speed)}
 			></input>
 
 			<label>

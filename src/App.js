@@ -47,6 +47,7 @@ class App extends Component {
         let value = selectedVehicles.get(resource.vehicleName);
         selectedVehicles.set(resource.vehicleName, --value);
         delete resource.vehicleName;
+        delete resource.time;
       }
 
       this.setState(state => 
@@ -57,7 +58,7 @@ class App extends Component {
       );
     };
 
-    this.radioClicked = (vehicleName, selectIndex) => {
+    this.radioClicked = (vehicleName, selectIndex, speed) => {
       const
         {
           resourceAllocation,
@@ -77,6 +78,8 @@ class App extends Component {
       resource.vehicleName = vehicleName;
       let value = selectedVehicles.get(vehicleName) || 0;
       selectedVehicles.set(vehicleName, ++value);
+
+      resource.time = resource.distance  / speed;
 
       this.setState(state => 
         ({
@@ -103,6 +106,10 @@ class App extends Component {
           error: true
         });
       })
+  }
+
+  getTotalTime () {
+    return this.state.resourceAllocation.reduce((acc, res) => acc += (res.time || 0), 0)
   }
 
   render() {
@@ -145,7 +152,7 @@ class App extends Component {
               />))
           }
         </div>
-        <div>Time Taken: </div>
+        <div>Time Taken: {this.getTotalTime()}</div>
       </div>
     );
   }
