@@ -11,66 +11,82 @@ class App extends Component {
       error: false,
       vehicles: [],
       planets: [],
-      selectedPlanetList: new Set(),
-      selectedVehicles: new Map(),
-      resourceAllocation: new Array(4).fill().map(() => ({})),
-      resourceRestriction: 4,
-      totalTime: 0
+      resourceAllocation: new Array(4).fill().map(() => ({}))
     }
+
+    this.selectedPlanetList = new Set();
+    this.selectedVehicles = new Map();
+
     this.planetSelected = (planetName, selectIndex) => {
-      this.setState(state => {
-        let { resourceAllocation,
-          selectedPlanetList,
+      const
+        {
+          resourceAllocation,
           planets,
+        } = this.state,
+        {
+          selectedPlanetList,
           selectedVehicles
-        } = state;
-        selectedPlanetList.delete(resourceAllocation[selectIndex].planetName);
-        if (planetName === 'Select') {
-          Object.assign(resourceAllocation[selectIndex], {
-            planetName: undefined,
-            distance: undefined
-          });
-        } else {
-          Object.assign(resourceAllocation[selectIndex], {
-            planetName: planetName,
-            distance: planets[planets.findIndex(eachPlanet => eachPlanet.name === planetName)].distance
-          });
-          selectedPlanetList.add(planetName);
-        }
-        // reset the radio selection
-        if (resourceAllocation[selectIndex].vehicleName) {
-          let lastSelectedVehicle = resourceAllocation[selectIndex].vehicleName,
-            value = selectedVehicles.get(lastSelectedVehicle);
-            delete resourceAllocation[selectIndex].vehicleName
-          selectedVehicles.set(lastSelectedVehicle, --value)
-         }
-        return {
-          resourceAllocation,
-          selectedPlanetList
-        }
-      });
-    }
+        } = this,
+        resource = {
+          ...resourceAllocation[selectIndex]
+        };
+
+      selectedPlanetList.delete(resource.planetName);
+
+      if (planetName === 'Select') {
+        delete resource.planetName;
+        delete resource.distance;
+      } else {
+        resource.planetName = planetName;
+        resource.distance = planets[planets.findIndex(eachPlanet => eachPlanet.name === planetName)].distance;
+        selectedPlanetList.add(planetName);
+      }
+
+      // reset the radio selection
+      if (resource.vehicleName) {
+        let value = selectedVehicles.get(resource.vehicleName);
+        selectedVehicles.set(resource.vehicleName, --value);
+        delete resource.vehicleName;
+      }
+
+      this.setState(state => 
+        ({
+          ...state,
+          resourceAllocation: state.resourceAllocation.map((res, i) => i === selectIndex ? resource : res)
+        })
+      );
+    };
+
     this.radioClicked = (vehicleName, selectIndex) => {
-      this.setState(state => {
-        let { 
+      const
+        {
           resourceAllocation,
+        } = this.state,
+        {
           selectedVehicles
-         } = state;
-         if (resourceAllocation[selectIndex].vehicleName) {
-          let lastSelectedVehicle = resourceAllocation[selectIndex].vehicleName,
-            value = selectedVehicles.get(lastSelectedVehicle);
-          selectedVehicles.set(lastSelectedVehicle, --value)
-         }
-        resourceAllocation[selectIndex].vehicleName = vehicleName;
-          let value = selectedVehicles.get(vehicleName) || 0;
-          selectedVehicles.set(vehicleName, ++value)
-        return {
-          resourceAllocation,
-          selectedVehicles
-        }
-      })
-    }
+        } = this,
+        resource = {
+          ...resourceAllocation[selectIndex]
+        };
+
+      if (resource.vehicleName) {
+        let value = selectedVehicles.get(resource.vehicleName);
+        selectedVehicles.set(resource.vehicleName, --value);
+      }
+
+      resource.vehicleName = vehicleName;
+      let value = selectedVehicles.get(vehicleName) || 0;
+      selectedVehicles.set(vehicleName, ++value);
+
+      this.setState(state => 
+        ({
+          ...state,
+          resourceAllocation: state.resourceAllocation.map((res, i) => i === selectIndex ? resource : res)
+        })
+      );
+    };
   }
+
   componentDidMount() {
     axios.all([
       axios.get('https://findfalcone.herokuapp.com/planets'),
@@ -88,14 +104,17 @@ class App extends Component {
         });
       })
   }
+
   render() {
     let { error,
       resourceAllocation,
       planets,
-      vehicles,
-      selectedPlanetList,
-      selectedVehicles
-    } = this.state;
+      vehicles
+    } = this.state,
+      {
+        selectedPlanetList,
+        selectedVehicles
+      } = this;
     return error ? (<h1> connect to Internet</h1>) : (
       <div className="App">
         <h1>Finding Falcon</h1>
@@ -126,6 +145,7 @@ class App extends Component {
               />))
           }
         </div>
+        <div>Time Taken: </div>
       </div>
     );
   }
